@@ -37,4 +37,3 @@ self.addEventListener("install", function () {
     );
   });
 
-  console.log("Wtf");

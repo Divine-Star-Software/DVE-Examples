@@ -1,0 +1,27 @@
+{
+  "sources": [
+    {
+      "dir": "D:/DSSoftware/APPS/divinevoxelengine/src",
+      "fileExtensions": [
+        "ts"
+      ],
+      "id": "main"
+    }
+  ],
+  "outputs": [
+    {
+      "dir": "D:/DSSoftware/APPS/dve-examples/src/libs/dve",
+      "sourceID": "main",
+      "codeSection": [
+        "all"
+      ],
+      "keepComments": true
+    }
+  ],
+  "codeSections": {
+    "all": {
+      "start": "@ds",
+      "end": "@ds"
+    }
+  }
+}
