@@ -28,6 +28,13 @@ await DVER.$INIT({
         autoSunLight: false,
     },
 });
+DVER.renderManager.updateFogOptions({
+    mode: "exponential",
+});
+DVER.renderManager.updateShaderEffectOptions({
+    floraEffects: false,
+    fluidEffects: false,
+});
 const init = async () => {
     const canvas = SetUpCanvas();
     const engine = SetUpEngine(canvas);

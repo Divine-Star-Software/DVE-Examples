@@ -32,7 +32,7 @@ const commBase = {
         }
     },
     messageFunctions: {},
-    sendMessage: function (message, data, transfers) {
+    sendMessage: function (message, data = [], transfers) {
         if (!this.port) {
             throw new Error(`DVE InterComm : ${this.name} port is not set.`);
         }

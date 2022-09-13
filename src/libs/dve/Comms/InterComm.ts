@@ -25,17 +25,21 @@ const commBase: InterCommInterface = {
    };
   }
   if (this.environment == "node") {
-    (port as NodeWorker).on("message", (data: any[]) => {
-     const message = data[0];
-     if (this.messageFunctions[message]) {
-      this.messageFunctions[message](data, (data as any));
-     }
-     this.onMessage(data);
-    });
-   }
+   (port as NodeWorker).on("message", (data: any[]) => {
+    const message = data[0];
+    if (this.messageFunctions[message]) {
+     this.messageFunctions[message](data, data as any);
+    }
+    this.onMessage(data);
+   });
+  }
  },
  messageFunctions: {},
- sendMessage: function (message: string | number, data: any[], transfers?: any[]) {
+ sendMessage: function (
+  message: string | number,
+  data: any[] = [],
+  transfers?: any[]
+ ) {
   if (!this.port) {
    throw new Error(`DVE InterComm : ${this.name} port is not set.`);
   }
