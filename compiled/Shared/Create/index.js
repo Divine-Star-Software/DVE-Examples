@@ -12,7 +12,13 @@ export const SetUpWorkers = (basePath, worldPath, constructorPath, nexusPath = n
     });
     const constructorWorkers = [];
     const cPath = new URL(constructorPath, basePath);
-    for (let i = 0; i < 12; i++) {
+    let threads = 4;
+    if (navigator) {
+        if (navigator.hardwareConcurrency) {
+            threads = navigator.hardwareConcurrency;
+        }
+    }
+    for (let i = 0; i < threads; i++) {
         constructorWorkers.push(new Worker(cPath, {
             type: "module",
         }));
@@ -47,6 +53,6 @@ export const SetUpWorkers = (basePath, worldPath, constructorPath, nexusPath = n
         nexusWorker: nexusWorker,
         dataWorker: dataWorker,
         fxWorker: fxWorker,
-        richWorldWorker: richWorldWorker
+        richWorldWorker: richWorldWorker,
     };
 };
