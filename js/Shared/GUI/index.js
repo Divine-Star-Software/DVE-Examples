@@ -1,4 +1,4 @@
-import { WorldBounds } from "../../../out/data/world/WorldBounds.js";
+import { WorldBounds } from "../../../out/Data/World/WorldBounds.js";
 export const CreateGUI = (DVER) => {
     let divFps = document.getElementById("fps");
     let position = document.getElementById("position");
