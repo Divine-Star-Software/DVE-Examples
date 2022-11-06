@@ -1,35 +1,19 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Page Title</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <script src="init.js" type="module"></script>
-    <script defer  src="./libs/bjs5/babylon.js"></script>
-    <script
-      defer
-      type="module"
-      src="./compiled/Worlds/Simple/index.js"
-    ></script>
-  </head>
-  <body class="default">
-    <div id="gui" class="gui">
-      <div class="fps"><span id="fps">0</span></div>
-      <div class="position"><span id="position">0</span></div>
-      <div class="position"><span id="chunk-position">0</span></div>
-    </div>
-    <div id="opetionsMenu" class="gui optionsMenu">
-      <div id="gui-buttons"></div>
-    </div>
-    <div id="rich-data">
-      <h1>Rich Data</h1>
-      <textarea id="rich-data-display" rows="25" cols="100"> </textarea>
-      <div class="rd-buttons">
-        <button id="rd-save">Save</button>
-        <button id="rd-exit">Exit</button>
-      </div>
-    </div>
-  </body>
+<html lang="en">
+ <head>
+  <title>Divine Voxel Engine</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="./css/main.css" />
+ </head>
+
+ <body class="default">
+
+  <script src="./index.js" ></script>
+
+  <script src="./lib/bjs5/babylon.js" defer></script>
+
+  <script type="module" src="./screens/index.js" defer></script>
+ </body>
 </html>
