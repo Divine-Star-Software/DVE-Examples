@@ -13,7 +13,7 @@ homeButton.className = "gui-button";
 homeButton.innerText = "Home";
 homeButton.addEventListener("click", () => {
   localStorage.removeItem("current-world");
-  window.location.href = "/index.html";
+  window.location.href = "/DVE-Examples/index.html";
 });
 
 guiButtons.append(homeButton);
