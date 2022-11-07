@@ -7,6 +7,15 @@ const loadWorld = (world) => {
   localStorage.setItem("current-world", world);
 };
 
+
+document.addEventListener("DOMContentLoaded", function () {
+  const world = localStorage.getItem("current-world");
+  if (world) {
+    loadWorld(world);
+  }
+});
+
+
 const guiButtons = document.getElementById("gui-buttons");
 const homeButton = document.createElement("button");
 homeButton.className = "gui-button";
@@ -17,10 +26,3 @@ homeButton.addEventListener("click", () => {
 });
 
 guiButtons.append(homeButton);
-
-document.addEventListener("DOMContentLoaded", function () {
-  const world = localStorage.getItem("current-world");
-  if (world) {
-    loadWorld(world);
-  }
-});
