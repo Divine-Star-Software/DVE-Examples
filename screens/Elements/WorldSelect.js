@@ -1,5 +1,4 @@
 import { Worlds } from "../Worlds.js";
-
 const WorldSelection = (title, description, world) => {
     return [
         {

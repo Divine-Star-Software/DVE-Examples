@@ -1,17 +1,47 @@
 {
   "sources": [
     {
-      "dir": "D:/DSSoftware/APPS/divinevoxelengine/src",
+      "dir": "D:/DSSoftware/APPS/divinevoxelengine/dist",
       "fileExtensions": [
-        "ts"
+        "js"
       ],
-      "id": "main"
+      "id": "dve"
+    },
+    {
+      "dir": "D:/DSSoftware/APPS/divinevoxelengine/tests/electron/app/js",
+      "fileExtensions": [
+        "js"
+      ],
+      "id": "examples"
+    },
+    {
+      "dir": "D:/DSSoftware/APPS/divinevoxelengine/tests/electron/app/screens",
+      "fileExtensions": [
+        "js","css"
+      ],
+      "id": "screens"
     }
   ],
   "outputs": [
     {
-      "dir": "D:/DSSoftware/APPS/dve-examples/src/libs/dve",
-      "sourceID": "main",
+      "dir": "D:/DSSoftware/APPS/dve-examples/out/",
+      "sourceID": "dve",
+      "codeSection": [
+        "all"
+      ],
+      "keepComments": true
+    },
+    {
+      "dir": "D:/DSSoftware/APPS/dve-examples/js/",
+      "sourceID": "examples",
+      "codeSection": [
+        "all"
+      ],
+      "keepComments": true
+    },
+    {
+      "dir": "D:/DSSoftware/APPS/dve-examples/screens/",
+      "sourceID": "screens",
       "codeSection": [
         "all"
       ],
