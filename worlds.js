@@ -3,6 +3,7 @@ const loadWorld = (world) => {
   script.type = "module";
   script.src = `./js/${world}/index.js`;
   script.defer = true;
+  script.crossOrigin = "anonymous"
   document.body.append(script);
   localStorage.setItem("current-world", world);
 };
