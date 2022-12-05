@@ -1,4 +1,4 @@
-import { PlayerWorld } from "../../Shared/Player/World/PlayerWorld.js";
+import { WorldPlayer } from "../../Shared/Player/World/WorldPlayer.js";
 import { DVEW } from "../../../out/World/DivineVoxelEngineWorld.js";
 import { RegisterVoxels } from "../../Shared/Functions/RegisterVoxelData.js";
 import { WorldGen } from "./WorldGen/WorldGen.js";
@@ -13,7 +13,7 @@ let startZ = -16 * numChunks;
 let endX = 16 * numChunks;
 let endZ = 16 * numChunks;
 const builder = DVEW.getBuilder();
-const tasks = DVEW.getTasksManager();
+const tasks = DVEW.getTasksTool();
 for (let x = startX; x < endX; x += 16) {
     for (let z = startZ; z < endZ; z += 16) {
         WorldGen.generateWorldColumn(x, z);
@@ -27,8 +27,8 @@ for (let x = startX; x < endX; x += 16) {
     }
 }
 GetAnalyzerCubeWorld(DVEW);
-await PlayerWorld(DVEW);
-self.tasks = DVEW.getTasksManager();
+await WorldPlayer(DVEW);
+self.tasks = DVEW.getTasksTool();
 self.builder = DVEW.getBuilder();
 self.dt = DVEW.getDataTool();
 self.VR = VoxelReader;

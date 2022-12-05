@@ -59,24 +59,29 @@ export const SetUpDefaultCamera = (scene, canvas, startPosition = { x: 0, y: 30,
     const camera = new BABYLON.UniversalCamera(name, BABYLON.Vector3.Zero(), scene);
     camera.fov = 1.5;
     camera.minZ = 0.01;
-    camera.maxZ = 500;
+    camera.maxZ = 1000;
     camera.angularSensibility = 1000;
     camera.speed = camera.speed * 0.2;
     camera.checkCollisions = false;
     camera.position.x = startPosition.x;
     camera.position.y = startPosition.y;
     camera.position.z = startPosition.z;
+    camera.keysUp.push(87);
+    camera.keysDown.push(83);
+    camera.keysLeft.push(65);
+    camera.keysRight.push(68);
     camera.setTarget(target);
     if (makeActiveCamera) {
         scene.activeCamera = camera;
     }
     if (attachControls) {
         camera.attachControl(canvas, true);
+        camera.inputs.addKeyboard();
     }
     return camera;
 };
 export const SetUpDefaultSkybox = (scene) => {
-    const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 400.0 }, scene);
+    const skybox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 800.0 }, scene);
     const skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);

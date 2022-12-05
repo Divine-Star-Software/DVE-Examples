@@ -25,7 +25,7 @@ export const DVEPH = {
             return false;
         if (!this._dataTool.isRenderable())
             return false;
-        if (this._dataTool.getSubstance() == "fluid")
+        if (this._dataTool.getSubstance() == "liquid")
             return false;
         const voxelData = this.voxelManager.getVoxelData(this._dataTool.getStringId());
         if (!voxelData)
@@ -37,9 +37,7 @@ export const DVEPH = {
             return false;
         return this.colliders.getCollider(voxelData.physics.collider);
     },
-    createEntityObject(base) {
-        const newBase = Object.create(EntityBase);
-        const assignedBase = Object.assign(newBase, base);
-        return assignedBase;
+    createEntityObject() {
+        return new EntityBase();
     },
 };

@@ -21,7 +21,7 @@ export declare type EngineSettingsData = {
     server: {
         enabled: boolean;
     };
-    textureOptions: {
+    textures: {
         width: number;
         height: number;
         animationTime: number;
@@ -64,7 +64,7 @@ export declare type EngineSettingsData = {
     meshes: {
         clearChachedGeometry: boolean;
         checkMagmaCollisions: boolean;
-        checkFluidCollisions: boolean;
+        checkLiquidCollisions: boolean;
         checkFloraCollisions: boolean;
         checkSolidCollisions: boolean;
         seralize: boolean;
@@ -73,7 +73,7 @@ export declare type EngineSettingsData = {
     materials: {
         mode: "classic" | "standard";
         disableFloraShaderEffects: boolean;
-        disableFluidShaderEffects: boolean;
+        disableLiquidShaderEffects: boolean;
         doAO: boolean;
         doSunLight: boolean;
         doRGBLight: boolean;

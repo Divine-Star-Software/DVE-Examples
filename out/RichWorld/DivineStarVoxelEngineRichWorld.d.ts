@@ -69,11 +69,11 @@ export declare const DVERW: {
             y: number;
             z: number;
         };
-        getChunkKey(chunkPOS: import("Meta/index.js").Position3Matrix): string;
+        getChunkKey(chunkPOS: import("Meta/index.js").Vector3): string;
         getChunkKeyFromPosition(x: number, y: number, z: number): string;
-        getRegionKey(regionPOS: import("Meta/index.js").Position3Matrix): string;
+        getRegionKey(regionPOS: import("Meta/index.js").Vector3): string;
         getRegionKeyFromPosition(x: number, y: number, z: number): string;
-        getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Position3Matrix): {
+        getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Vector3): {
             x: number;
             y: number;
             z: number;
@@ -136,7 +136,7 @@ export declare const DVERW: {
                 autoSyncChunks: boolean;
                 autoSyncVoxelPalette: boolean;
             };
-            textureOptions: {
+            textures: {
                 animationTime: number;
                 width: number;
                 height: number;
@@ -179,7 +179,7 @@ export declare const DVERW: {
             meshes: {
                 clearChachedGeometry: boolean;
                 checkMagmaCollisions: boolean;
-                checkFluidCollisions: boolean;
+                checkLiquidCollisions: boolean;
                 checkFloraCollisions: boolean;
                 checkSolidCollisions: boolean;
                 seralize: boolean;
@@ -191,7 +191,7 @@ export declare const DVERW: {
                 doSunLight: boolean;
                 doRGBLight: boolean;
                 disableFloraShaderEffects: boolean;
-                disableFluidShaderEffects: boolean;
+                disableLiquidShaderEffects: boolean;
             };
         };
         getSettings(): EngineSettingsData;
@@ -264,11 +264,11 @@ export declare const DVERW: {
                 y: number;
                 z: number;
             };
-            getChunkKey(chunkPOS: import("Meta/index.js").Position3Matrix): string;
+            getChunkKey(chunkPOS: import("Meta/index.js").Vector3): string;
             getChunkKeyFromPosition(x: number, y: number, z: number): string;
-            getRegionKey(regionPOS: import("Meta/index.js").Position3Matrix): string;
+            getRegionKey(regionPOS: import("Meta/index.js").Vector3): string;
             getRegionKeyFromPosition(x: number, y: number, z: number): string;
-            getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Position3Matrix): {
+            getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Vector3): {
                 x: number;
                 y: number;
                 z: number;
@@ -374,11 +374,11 @@ export declare const DVERW: {
                 y: number;
                 z: number;
             };
-            getChunkKey(chunkPOS: import("Meta/index.js").Position3Matrix): string;
+            getChunkKey(chunkPOS: import("Meta/index.js").Vector3): string;
             getChunkKeyFromPosition(x: number, y: number, z: number): string;
-            getRegionKey(regionPOS: import("Meta/index.js").Position3Matrix): string;
+            getRegionKey(regionPOS: import("Meta/index.js").Vector3): string;
             getRegionKeyFromPosition(x: number, y: number, z: number): string;
-            getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Position3Matrix): {
+            getVoxelPositionFromChunkPosition(x: number, y: number, z: number, chunkPOS: import("Meta/index.js").Vector3): {
                 x: number;
                 y: number;
                 z: number;

@@ -9,6 +9,30 @@ import { BrushTool } from "../../../Tools/Brush/Brush.js";
 const dataTool = new DataTool();
 const nDataTool = new DataTool();
 const brushTool = new BrushTool();
+const updateLight = (x, y, z) => {
+    let doRGB = ES.doRGBPropagation();
+    let doSun = ES.doSunPropagation();
+    for (const n of $3dCardinalNeighbors) {
+        const nx = n[0] + x;
+        const ny = n[1] + y;
+        const nz = n[2] + z;
+        if (!nDataTool.loadIn(nx, ny, nz))
+            continue;
+        const l = nDataTool.getLight();
+        if (l <= 0)
+            continue;
+        if (doRGB) {
+            if (LightData.hasRGBLight(l)) {
+                Propagation.illumination._RGBlightUpdateQ.push([nx, ny, nz]);
+            }
+        }
+        if (doSun) {
+            if (LightData.getS(l) > 0) {
+                Propagation.illumination._sunLightUpdate.enqueue([nx, ny, nz]);
+            }
+        }
+    }
+};
 export async function EreaseAndUpdate(data) {
     const dimenson = data[0];
     const x = data[1];
@@ -19,8 +43,7 @@ export async function EreaseAndUpdate(data) {
     dataTool.setDimension(dimenson).loadIn(x, y, z);
     if (ES.doFlow()) {
         const substance = dataTool.getSubstance();
-        if (substance == "fluid" || substance == "magma") {
-            console.log("");
+        if (substance == "liquid" || substance == "magma") {
             await Propagation.removeFlowAt(data);
             return true;
         }
@@ -39,33 +62,14 @@ export async function EreaseAndUpdate(data) {
                 Propagation.runRGBRemove(data);
             }
         }
-        for (const n of $3dCardinalNeighbors) {
-            const nx = n[0] + x;
-            const ny = n[1] + y;
-            const nz = n[2] + z;
-            if (!nDataTool.loadIn(nx, ny, nz))
-                continue;
-            const l = nDataTool.getLight();
-            if (l <= 0)
-                continue;
+        updateLight(x, y, z);
+        if (sl >= 0) {
             if (doRGB) {
-                if (LightData.hasRGBLight(l)) {
-                    Propagation.illumination._RGBlightUpdateQ.push([nx, ny, nz]);
-                }
-            }
-            if (doSun) {
-                if (LightData.getS(l) > 0) {
-                    Propagation.illumination._sunLightUpdate.enqueue([nx, ny, nz]);
-                }
-            }
-        }
-        if (doRGB) {
-            if (sl >= 0) {
                 Propagation.runRGBUpdate(data);
             }
-        }
-        if (doSun) {
-            Propagation.runSunLightUpdate(data);
+            if (doSun) {
+                Propagation.runSunLightUpdate(data);
+            }
         }
     }
     const thread = ThreadComm.getComm(threadId);
@@ -104,10 +108,12 @@ export async function PaintAndUpdate(data) {
     }
     brushTool.paint();
     if (ES.doLight()) {
+        updateLight(x, y, z);
         if (doRGB) {
-            if (brushTool._dt.isLightSource()) {
-                Propagation.runRGBUpdate(tasks);
-            }
+            Propagation.runRGBUpdate(tasks);
+        }
+        if (doSun) {
+            Propagation.runSunLightUpdate(tasks);
         }
     }
     const thread = ThreadComm.getComm(threadId);
@@ -116,7 +122,7 @@ export async function PaintAndUpdate(data) {
     ]);
     if (ES.doFlow()) {
         const substance = brushTool._dt.getSubstance();
-        if (substance == "fluid" || substance == "magma") {
+        if (substance == "liquid" || substance == "magma") {
             Propagation.updateFlowAt(tasks);
         }
     }

@@ -1,5 +1,5 @@
 import { VoxelMath } from "../../../../out/Libs/Math/DivineVoxelEngineMath.js";
-export const PlayerWorld = async (DVEW) => {
+export const WorldPlayer = async (DVEW) => {
     const pickSAB = new SharedArrayBuffer(4 * 3 + 3);
     let pickDV = new DataView(pickSAB);
     const dataTool = DVEW.getDataTool();

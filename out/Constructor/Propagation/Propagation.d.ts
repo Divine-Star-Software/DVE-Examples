@@ -93,7 +93,7 @@ export declare const Propagation: {
             removeSunLight(sl: number): number;
             minusOneForAll(sl: number): number;
         };
-        dimension: number;
+        dimension: string;
         currentVoxel: number;
         _visitedMap: Map<string, boolean>;
         _removeMap: Map<string, boolean>;
@@ -129,7 +129,6 @@ export declare const Propagation: {
         getLevel(x: number, y: number, z: number): number;
         getLevelState(x: number, y: number, z: number): number;
         canFlowOutwardTest(x: number, y: number, z: number): boolean;
-        canFlowDownardTest(x: number, y: number, z: number): boolean;
         flowDownTest(x: number, y: number, z: number): boolean;
         wait(ms: number): Promise<unknown>;
         _lightValues: [s: number, r: number, g: number, b: number];

@@ -1,24 +1,28 @@
-import { ChunkReader } from "../../Data/Chunk/ChunkReader.js";
+import { ChunkSpace } from "../../Data/Chunk/ChunkSpace.js";
 import { WorldRegister } from "../../Data/World/WorldRegister.js";
 import { DimensionsRegister } from "../../Data/Dimensions/DimensionsRegister.js";
-import { WorldBounds } from "../../Data/World/WorldBounds.js";
 import { VoxelReader } from "../../Data/Voxel/VoxelByte.js";
-import { VoxelData } from "../../Data/Voxel/VoxelData.js";
+import { VoxelTags } from "../../Data/Voxel/VoxelData.js";
 import { VoxelPaletteReader } from "../../Data/Voxel/VoxelPalette.js";
-import { HeightMapData } from "../../Data/Chunk/HeightMapData.js";
+import { ChunkDataTool } from "./ChunkDataTool.js";
+import { HeightMapTool } from "./HeightMapTool.js";
 export class DataTool {
     static _dtutil = new DataTool();
+    static _chunkTool = new ChunkDataTool();
+    static _heightMapTool = new HeightMapTool();
     _mode = "World";
     data = {
         dimension: "main",
         raw: [0, 0],
-        x: 0,
-        y: 9,
-        z: 9,
         id: 0,
         baseId: 0,
         secondaryId: 0,
         secondaryBaseId: 0,
+    };
+    position = {
+        x: 0,
+        y: 0,
+        z: 0,
     };
     _cached = {
         id: 0,
@@ -60,16 +64,16 @@ export class DataTool {
         this.setSecondary(false);
     }
     loadIn(x, y, z) {
-        this.data.x = x;
-        this.data.y = y;
-        this.data.z = z;
+        this.position.x = x;
+        this.position.y = y;
+        this.position.z = z;
         if (this._mode == "World") {
             const chunk = WorldRegister.chunk.get(this.data.dimension, x, y, z);
-            if (!chunk)
+            DataTool._chunkTool.setDimension(this.data.dimension);
+            if (!DataTool._chunkTool.loadIn(x, y, z))
                 return false;
-            const voxelPOS = WorldBounds.getVoxelPosition(x, y, z);
-            this.data.raw[0] = ChunkReader.getVoxelDataUseObj(chunk, voxelPOS);
-            this.data.raw[1] = ChunkReader.getVoxelDataUseObj(chunk, voxelPOS, true);
+            this.data.raw[0] = DataTool._chunkTool.getArrayTagValue("#dve:voxel_data", ChunkSpace.getVoxelDataIndex(x, y, z));
+            this.data.raw[1] = DataTool._chunkTool.getArrayTagValue("#dve:voxel_state_data", ChunkSpace.getVoxelDataIndex(x, y, z));
             this.__process();
             return true;
         }
@@ -79,27 +83,33 @@ export class DataTool {
     }
     commit(heightMapUpdate = 0) {
         if (this._mode == "World") {
-            const chunk = WorldRegister.chunk.get(this.data.dimension, this.data.x, this.data.y, this.data.z);
-            if (!chunk)
+            DataTool._chunkTool.setDimension(this.data.dimension);
+            if (!DataTool._chunkTool.loadIn(this.position.x, this.position.y, this.position.z))
                 return false;
-            const voxelPOS = WorldBounds.getVoxelPosition(this.data.x, this.data.y, this.data.z);
-            ChunkReader.setVoxelDataUseObj(chunk, voxelPOS, this.data.raw[0]);
-            ChunkReader.setVoxelDataUseObj(chunk, voxelPOS, this.data.raw[1], true);
+            const index = ChunkSpace.getVoxelDataIndex(this.position.x, this.position.y, this.position.z);
+            DataTool._chunkTool.setArrayTagValue("#dve:voxel_data", index, this.data.raw[0]);
+            DataTool._chunkTool.setArrayTagValue("#dve:voxel_state_data", index, this.data.raw[1]);
             if (heightMapUpdate) {
+                DataTool._heightMapTool.chunk.setChunk(DataTool._chunkTool._c);
                 const substance = this.getTemplateSubstance();
+                //on add
                 if (heightMapUpdate == 1) {
-                    HeightMapData.calculateHeightAddDataForSubstance(voxelPOS.y, substance, voxelPOS.x, voxelPOS.z, chunk.data);
-                    HeightMapData.updateChunkMinMax(voxelPOS, chunk.data);
+                    DataTool._heightMapTool.chunk.update("add", substance, this.position.x, this.position.y, this.position.z);
                 }
+                //on remove
                 if (heightMapUpdate == 2) {
-                    HeightMapData.calculateHeightRemoveDataForSubstance(voxelPOS.y, substance, voxelPOS.x, voxelPOS.z, chunk.data);
-                    HeightMapData.updateChunkMinMax(voxelPOS, chunk.data);
+                    DataTool._heightMapTool.chunk.update("remove", substance, this.position.x, this.position.y, this.position.z);
                 }
             }
         }
         if (this._mode == "Entity") {
         }
         return this;
+    }
+    getTagValue(id) {
+        const vId = this.getId(true);
+        VoxelTags.setVoxel(vId);
+        return VoxelTags.getTag(id);
     }
     getLight() {
         const rawVoxelData = this.data.raw[0];
@@ -110,11 +120,11 @@ export class DataTool {
             return VoxelReader.getLight(rawVoxelData);
         if (voxelId < 2)
             return -1;
-        const lightValue = VoxelData.getLightValue(voxelId);
-        if (VoxelData.isLightSource(voxelId) && lightValue) {
+        const lightValue = this.getTagValue("#dve:light_value");
+        if (this.getTagValue("#dve:is_light_source") && lightValue) {
             return lightValue;
         }
-        if (VoxelData.getTrueSubstance(voxelId) == "solid") {
+        if (VoxelTags.getTrueSubstance(voxelId) == "solid") {
             return -1;
         }
         return VoxelReader.getLight(rawVoxelData);
@@ -149,57 +159,34 @@ export class DataTool {
     }
     //voxel data
     getShapeId() {
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return -1;
-            return VoxelData.getShapeId(this.data.secondaryBaseId);
-        }
-        if (this.data.id < 2)
+        const vID = this.getId(true);
+        if (vID < 2)
             return -1;
-        return VoxelData.getShapeId(this.data.baseId);
+        VoxelTags.setVoxel(vID);
+        return VoxelTags.getTag("#dve:shape_id");
     }
     isLightSource() {
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return false;
-            return VoxelData.isLightSource(this.data.secondaryBaseId);
-        }
-        if (this.data.id < 2)
+        const vID = this.getId(true);
+        if (vID < 2)
             return false;
-        return VoxelData.isLightSource(this.data.baseId);
+        VoxelTags.setVoxel(vID);
+        return VoxelTags.getTag("#dve:is_light_source") == 1;
     }
     getLightSourceValue() {
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return -1;
-            return VoxelData.getLightValue(this.data.secondaryBaseId);
-        }
-        if (this.data.id < 2)
-            return -1;
-        return VoxelData.getLightValue(this.data.baseId);
+        const vID = this.getId(true);
+        if (vID < 2)
+            return 0;
+        VoxelTags.setVoxel(vID);
+        return VoxelTags.getTag("#dve:light_value");
     }
     getSubstance() {
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return "solid";
-            return VoxelData.getTrueSubstance(this.data.secondaryBaseId);
-        }
-        if (this.data.id < 2)
-            return "solid";
-        return VoxelData.getTrueSubstance(this.data.baseId);
+        const vID = this.getId(true);
+        if (vID < 2)
+            return "transparent";
+        return VoxelTags.getTrueSubstance(vID);
     }
     getTemplateSubstance() {
-        let substance;
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return "solid";
-            substance = VoxelData.getTrueSubstance(this.data.secondaryBaseId);
-        }
-        else {
-            if (this.data.id < 2)
-                return "solid";
-            substance = VoxelData.getTrueSubstance(this.data.baseId);
-        }
+        let substance = this.getSubstance();
         if (substance == "transparent") {
             substance = "solid";
         }
@@ -212,14 +199,11 @@ export class DataTool {
         return this.data.id - this.data.baseId;
     }
     isRich() {
-        if (this.__secondary) {
-            if (this.data.secondaryBaseId < 2)
-                return false;
-            return VoxelData.isRich(this.data.secondaryBaseId);
-        }
-        if (this.data.id < 2)
-            return false;
-        return VoxelData.isRich(this.data.baseId);
+        const vID = this.getId(true);
+        if (vID < 2)
+            return 0;
+        VoxelTags.setVoxel(vID);
+        return VoxelTags.getTag("#dve:is_rich");
     }
     //util
     setAir() {
@@ -239,14 +223,12 @@ export class DataTool {
     //voxel id
     getId(base = false) {
         if (this.__secondary) {
-            if (!base) {
+            if (!base)
                 return this.data.secondaryId;
-            }
             return this.data.secondaryBaseId;
         }
-        if (!base) {
+        if (!base)
             return this.data.id;
-        }
         return this.data.baseId;
     }
     setId(id) {

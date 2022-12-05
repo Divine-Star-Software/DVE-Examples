@@ -1,5 +1,5 @@
 import { VoxelSubstanceType } from "Meta/index.js";
-import { Position3Matrix } from "Meta/Util.types.js";
+import { Vector3 } from "Meta/Util.types.js";
 export declare const ChunkState: {
     positionByte: {
         _poisiton: {
@@ -19,7 +19,7 @@ export declare const ChunkState: {
             z: number;
         };
         setPosition(x: number, y: number, z: number): number;
-        setPositionUseObj(positionObj: Position3Matrix): number;
+        setPositionUseObj(positionObj: Vector3): number;
     };
     indexes: {
         states: number;
@@ -34,7 +34,7 @@ export declare const ChunkState: {
         worldGenDone: boolean;
         sunLightDone: boolean;
         RGBLightDone: boolean;
-        fluidDone: boolean;
+        liquidDone: boolean;
         magmaDone: boolean;
     };
     _chunkStateMask: {
@@ -46,26 +46,26 @@ export declare const ChunkState: {
         sunLightIndex: number;
         RGBLightDone: number;
         RGBLightIndex: number;
-        fluidDone: number;
-        fluidIndex: number;
+        liquidDone: number;
+        liquidIndex: number;
         magmaDone: number;
         magmaIndex: number;
     };
-    updateChunkMinMax(voxelPOS: Position3Matrix, chunkStatesData: Uint32Array): void;
+    updateChunkMinMax(voxelPOS: Vector3, chunkStatesData: Uint32Array): void;
     getChunkMin(chunkStatesData: Uint32Array): number;
     getChunkMax(chunkStatesData: Uint32Array): number;
     isEmpty(chunkStatesData: Uint32Array): boolean;
     isWorldGenDone(chunkStatesData: Uint32Array): boolean;
     isSunLightUpdatesDone(chunkStatesData: Uint32Array): boolean;
     isRGBLightUpdatesDone(chunkStatesData: Uint32Array): boolean;
-    isFluidFlowDone(chunkStatesData: Uint32Array): boolean;
+    isLiquidFlowDone(chunkStatesData: Uint32Array): boolean;
     isMagmaFlowDone(chunkStatesData: Uint32Array): boolean;
     getFullChunkStates(chunkStatesData: Uint32Array): {
         empty: boolean;
         worldGenDone: boolean;
         sunLightDone: boolean;
         RGBLightDone: boolean;
-        fluidDone: boolean;
+        liquidDone: boolean;
         magmaDone: boolean;
     };
     addToVoxelCount(voxelSubstance: VoxelSubstanceType, chunkStatesData: Uint32Array): void;

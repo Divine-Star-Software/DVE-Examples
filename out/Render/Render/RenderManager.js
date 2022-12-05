@@ -1,22 +1,39 @@
+//built in
+import { DVEMesh } from "./Meshes/DVEMesh.js";
+import { DVEMaterial } from "./Materials/DVEMaterial.js";
 //objects
 import { AnimationManager } from "./Animations/AnimationManager.js";
 import { ShaderBuilder } from "./Shaders/ShaderBuilder.js";
 import { TextureCreator } from "./Textures/TextureCreator.js";
-//meshes
-import { SolidMesh } from "./Meshes/Solid/SolidMesh.js";
-import { FloraMesh } from "./Meshes/Flora/FloraMesh.js";
-import { FluidMesh } from "./Meshes/Fluid/FluidMesh.js";
-import { MagmaMesh } from "./Meshes/Magma/MagmaMesh.js";
-import { ItemMesh } from "./Meshes/Item/ItemMesh.js";
 //materials
-import { SolidMaterial } from "./Materials/Solid/SolidMaterial.js";
-import { FloraMaterial } from "./Materials/Flora/FloraMaterial.js";
-import { FluidMaterial } from "./Materials/Fluid/FluidMaterial.js";
-import { MagmaMaterial } from "./Materials/Magma/MagmaMaterial.js";
 import { SkyBoxMaterial } from "./Materials/SkyBox/SkyBoxMaterial.js";
-import { ItemMaterial } from "./Materials/Item/ItemMaterial.js";
-import { StandardSolidMaterial } from "./Materials/Solid/Standard/SolidMaterial.bjsmp.js";
-import { StandardFluidMaterial } from "./Materials/Fluid/Standard/FluidMaterial.bjsmp.js";
+import { StandardSolidMaterial } from "./Materials/Standard/SolidMaterial.bjsmp.js";
+import { StandardLiquidMaterial } from "./Materials/Standard/LiquidMaterial.bjsmp.js";
+const solidMaterial = new DVEMaterial("solid", {
+    alphaBlending: false,
+    alphaTesting: true,
+});
+const solidMesh = new DVEMesh("solid", solidMaterial);
+const floraMat = new DVEMaterial("flora", {
+    alphaBlending: false,
+    alphaTesting: true,
+});
+const floraMesh = new DVEMesh("flora", floraMat);
+const magmaMat = new DVEMaterial("magma", {
+    alphaBlending: false,
+    alphaTesting: true,
+});
+const magmaMesh = new DVEMesh("magma", magmaMat);
+const liquidMat = new DVEMaterial("liquid", {
+    alphaBlending: true,
+    alphaTesting: false,
+});
+const liquidMesh = new DVEMesh("liquid", liquidMat);
+const itemMat = new DVEMaterial("Item", {
+    alphaBlending: false,
+    alphaTesting: true,
+});
+const itemMesh = new DVEMesh("Item", itemMat);
 export const RenderManager = {
     fogOptions: {
         mode: "volumetric",
@@ -26,27 +43,27 @@ export const RenderManager = {
             heightFactor: 0.25,
         },
     },
-    fogData: new BABYLON.Vector4(1, .1, 0.5, 0),
+    fogData: new BABYLON.Vector4(1, 0.1, 0.5, 0),
     effectOptions: {
         floraEffects: false,
-        fluidEffects: false,
+        liquidEffects: false,
     },
     shaderBuilder: ShaderBuilder,
     textureCreator: TextureCreator,
     animationManager: AnimationManager,
-    solidMaterial: SolidMaterial,
-    floraMaterial: FloraMaterial,
-    fluidMaterial: FluidMaterial,
-    magmaMaterial: MagmaMaterial,
-    itemMaterial: ItemMaterial,
+    solidMaterial: solidMaterial,
+    floraMaterial: floraMat,
+    liquidMaterial: liquidMat,
+    magmaMaterial: magmaMat,
+    itemMaterial: itemMat,
+    solidMesh: solidMesh,
+    floraMesh: floraMesh,
+    liquidMesh: liquidMesh,
+    magmaMesh: magmaMesh,
+    itemMesh: itemMesh,
     solidStandardMaterial: StandardSolidMaterial,
-    fluidStandardMaterial: StandardFluidMaterial,
+    liquidStandardMaterial: StandardLiquidMaterial,
     skyBoxMaterial: SkyBoxMaterial,
-    solidMesh: SolidMesh,
-    floraMesh: FloraMesh,
-    fluidMesh: FluidMesh,
-    magmaMesh: MagmaMesh,
-    itemMesh: ItemMesh,
     scene: null,
     reStart() { },
     setScene(scene) {
@@ -84,7 +101,7 @@ export const RenderManager = {
     _setFogData() {
         const fogData = this.fogData;
         this.solidMaterial.updateFogOptions(fogData);
-        this.fluidMaterial.updateFogOptions(fogData);
+        this.liquidMaterial.updateFogOptions(fogData);
         this.floraMaterial.updateFogOptions(fogData);
         this.magmaMaterial.updateFogOptions(fogData);
         this.itemMaterial.updateFogOptions(fogData);
@@ -98,16 +115,17 @@ export const RenderManager = {
         if (options.floraEffects !== undefined) {
             this.effectOptions.floraEffects = options.floraEffects;
         }
-        if (options.fluidEffects !== undefined) {
-            this.effectOptions.fluidEffects = options.fluidEffects;
+        if (options.liquidEffects !== undefined) {
+            this.effectOptions.liquidEffects = options.liquidEffects;
         }
     },
     syncSettings(settings) {
         this.solidMesh.syncSettings(settings);
         this.floraMesh.syncSettings(settings);
-        this.fluidMesh.syncSettings(settings);
+        this.liquidMesh.syncSettings(settings);
         this.magmaMesh.syncSettings(settings);
         this.itemMesh.syncSettings(settings);
+        this.textureCreator.defineTextureDimensions(settings.textures.width, settings.textures.height);
     },
     getScene() {
         return this.scene;
@@ -126,13 +144,13 @@ export const RenderManager = {
     },
     setSunLevel(level) {
         this.solidMaterial.setSunLightLevel(level);
-        this.fluidMaterial.setSunLightLevel(level);
+        this.liquidMaterial.setSunLightLevel(level);
         this.floraMaterial.setSunLightLevel(level);
         this.itemMaterial.setSunLightLevel(level);
     },
     setBaseLevel(level) {
         this.solidMaterial.setBaseLevel(level);
-        this.fluidMaterial.setBaseLevel(level);
+        this.liquidMaterial.setBaseLevel(level);
         this.floraMaterial.setBaseLevel(level);
         this.itemMaterial.setBaseLevel(level);
     },

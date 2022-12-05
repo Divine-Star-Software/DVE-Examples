@@ -1,11 +1,10 @@
-import type { DirectionNames, EngineSettingsData, VoxelSubstanceType } from "Meta/index.js";
-import type { ChunkData } from "Meta/Data/WorldData.types.js";
+import type { DirectionNames, EngineSettingsData, VoxelConstructorObject, VoxelShape, VoxelSubstanceType } from "Meta/index.js";
 import type { FullChunkTemplate } from "Meta/Constructor/ChunkTemplate.types.js";
 import type { VoxelProcessData } from "Meta/Constructor/Voxel.types.js";
-import type { Rotations } from "Meta/Constructor/Mesher.types.js";
+import type { FaceDataOverride } from "Meta/Constructor/OverRide.types";
+import type { TextureRotations } from "Meta/Constructor/Geometry/Geometry.types.js";
 import { CalculateVoxelLight, VoxelLightMixCalc } from "./Functions/CalculateVoxelLight.js";
 import { CalculateFlow } from "./Functions/CalculateFlow.js";
-import { DataTool } from "../../../Tools/Data/DataTool.js";
 /**# Chunk Processor
  * ---
  * Takes the given world data and generates templates
@@ -13,34 +12,11 @@ import { DataTool } from "../../../Tools/Data/DataTool.js";
  */
 export declare const Processor: {
     LOD: number;
-    mDataTool: DataTool;
-    nDataTool: DataTool;
-    heightByte: {
-        _getHeightMapData: Record<import("Meta/index.js").VoxelTemplateSubstanceType, (byteData: number) => number>;
-        _setHeightMapData: Record<import("Meta/index.js").VoxelTemplateSubstanceType, (height: number, byteData: number) => number>;
-        _markSubstanceAsNotExposed: Record<import("Meta/index.js").VoxelTemplateSubstanceType, (data: number) => number>;
-        _markSubstanceAsExposed: Record<import("Meta/index.js").VoxelTemplateSubstanceType, (data: number) => number>;
-        _isSubstanceExposed: Record<import("Meta/index.js").VoxelTemplateSubstanceType, (data: number) => boolean>;
-        getStartingHeightMapValue(): number;
-        initalizeChunk(chunkData: DataView): void;
-        updateChunkMinMax(voxelPOS: import("Meta/index.js").Position3Matrix, chunkData: DataView): void;
-        getChunkMin(chunkData: DataView): number;
-        getChunkMax(chunkData: DataView): number;
-        calculateHeightRemoveDataForSubstance(height: number, substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, heightMap: DataView): boolean | undefined;
-        calculateHeightAddDataForSubstance(height: number, substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): void;
-        getLowestExposedVoxel(x: number, z: number, chunk: DataView): number;
-        getHighestExposedVoxel(x: number, z: number, chunk: DataView): number;
-        isSubstanceExposed(substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): boolean;
-        markSubstanceAsExposed(substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): void;
-        markSubstanceAsNotExposed(substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): void;
-        setMinYForSubstance(height: number, substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): void;
-        getMinYForSubstance(substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): number;
-        setMaxYForSubstance(height: number, substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): void;
-        getMaxYForSubstance(substance: import("Meta/index.js").VoxelTemplateSubstanceType, x: number, z: number, chunk: DataView): number;
-    };
+    mDataTool: import("../../../Meta/Constructor/Constructor.types.js").ConstructorDataTool;
+    nDataTool: import("../../../Meta/Constructor/Constructor.types.js").ConstructorDataTool;
     faceByte: {
-        _rotationMap: Record<Rotations, number>;
-        _rotationReverseMap: Record<number, Rotations>;
+        _rotationMap: Record<TextureRotations, number>;
+        _rotationReverseMap: Record<number, TextureRotations>;
         _setFaceTextureState: Record<DirectionNames, (state: number, faceBit: number) => number>;
         _getFaceTextureState: Record<DirectionNames, (faceBit: number) => number>;
         _setFaceRotateState: Record<DirectionNames, (state: number, faceBit: number) => number>;
@@ -51,8 +27,8 @@ export declare const Processor: {
         isFaceExposed(direction: DirectionNames, rawData: number): boolean;
         setFaceRotateState(direction: DirectionNames, state: number, rawData: number): number;
         getFaceRotateState(direction: DirectionNames, rawData: number): number;
-        setFaceTextureState(direction: DirectionNames, rotation: Rotations, rawData: number): number;
-        getFaceTextureState(direction: DirectionNames, rawData: number): Rotations;
+        setFaceTextureState(direction: DirectionNames, rotation: TextureRotations, rawData: number): number;
+        getFaceTextureState(direction: DirectionNames, rawData: number): TextureRotations;
     };
     lightData: {
         SRS: number;
@@ -95,7 +71,7 @@ export declare const Processor: {
     doVoxelLight: typeof CalculateVoxelLight;
     exposedFaces: number[];
     faceStates: number[];
-    textureRotation: Rotations[];
+    textureRotation: TextureRotations[];
     settings: {
         doAO: boolean;
         doSun: boolean;
@@ -105,17 +81,17 @@ export declare const Processor: {
         composedEntity: number;
     };
     voxelProcesseData: VoxelProcessData;
-    cullFaceOverrideData: any;
+    faceDataOverride: FaceDataOverride;
     aoOverRideData: any;
     template: FullChunkTemplate;
     faceIndexMap: Record<DirectionNames, number>;
     dimension: number;
     $INIT(): void;
-    cullCheck(face: DirectionNames, voxelId: string, voxelShapeId: number, voxelSubstance: VoxelSubstanceType, shapeState: number, x: number, y: number, z: number, faceBit: number): number;
+    cullCheck(face: DirectionNames, voxelObject: VoxelConstructorObject, voxelShape: VoxelShape, voxelSubstance: VoxelSubstanceType, x: number, y: number, z: number, faceBit: number): number;
     faceStateCheck(face: DirectionNames, faceBit: number): number;
     _process(template: FullChunkTemplate, x: number, y: number, z: number, doSecondCheck?: boolean): void;
     constructEntity(composed?: number): FullChunkTemplate;
-    makeAllChunkTemplates(dimension: number, chunk: ChunkData, chunkX: number, chunkY: number, chunkZ: number, LOD?: number): FullChunkTemplate;
+    makeAllChunkTemplates(dimension: string, chunkX: number, chunkY: number, chunkZ: number, LOD?: number): FullChunkTemplate;
     processVoxelLight(data: VoxelProcessData, ignoreAO?: boolean): void;
     syncSettings(settings: EngineSettingsData): void;
     flush(): void;

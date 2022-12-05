@@ -2,19 +2,21 @@
 import { CalculateVoxelLight, VoxelLightMixCalc, } from "./Functions/CalculateVoxelLight.js";
 import { CalculateFlow } from "./Functions/CalculateFlow.js";
 //objects
-import { DVEB } from "../DivineVoxelEngineBuilder.js";
-import { DVEC } from "../../DivineVoxelEngineConstructor.js";
+import { Builder } from "../Builder.js";
 //data
-import { WorldRegister } from "../../../Data/World/WorldRegister.js";
-import { HeightMapData } from "../../../Data/Chunk/HeightMapData.js";
 import { FaceByte } from "../../../Data/Meshing/FaceByte.js";
 import { LightData } from "../../../Data/Light/LightByte.js";
 import { WorldBounds } from "../../../Data/World/WorldBounds.js";
 //maps
 import { $3dCardinalNeighbors } from "../../../Data/Constants/Util/CardinalNeighbors.js";
-import { FaceMap } from "../../../Data/Constants/Meshing/Faces.js";
+import { FaceMap } from "../../../Data/Constants/Util/Faces.js";
 //tools
-import { DataTool } from "../../../Tools/Data/DataTool.js";
+import { GetConstructorDataTool } from "../../../Constructor/Tools/Data/ConstructorDataTool.js";
+import { HeightMapTool } from "../../../Tools/Data/HeightMapTool.js";
+import { OverrideManager } from "../Overrides/OverridesManager.js";
+const mDT = GetConstructorDataTool();
+const nDT = GetConstructorDataTool();
+const heightMapTool = new HeightMapTool();
 /**# Chunk Processor
  * ---
  * Takes the given world data and generates templates
@@ -22,9 +24,8 @@ import { DataTool } from "../../../Tools/Data/DataTool.js";
  */
 export const Processor = {
     LOD: 1,
-    mDataTool: new DataTool(),
-    nDataTool: new DataTool(),
-    heightByte: HeightMapData,
+    mDataTool: mDT,
+    nDataTool: nDT,
     faceByte: FaceByte,
     lightData: LightData,
     calculatFlow: CalculateFlow,
@@ -59,17 +60,11 @@ export const Processor = {
         y: 0,
         z: 0,
     },
-    cullFaceOverrideData: {
+    faceDataOverride: {
         face: "south",
-        substanceResult: true,
-        shapeState: 0,
-        voxel: {},
-        neighborVoxel: 0,
-        neighborVoxelShape: {},
-        neighborVoxelShapeState: 0,
-        x: 0,
-        y: 0,
-        z: 0,
+        default: false,
+        currentVoxel: mDT,
+        neighborVoxel: nDT,
     },
     aoOverRideData: {
         face: "",
@@ -98,17 +93,6 @@ export const Processor = {
             lightTemplate: [],
             aoTemplate: [],
         },
-        transparent: {
-            positionTemplate: [],
-            faceTemplate: [],
-            uvTemplate: [],
-            overlayUVTemplate: [],
-            shapeTemplate: [],
-            shapeStateTemplate: [],
-            colorTemplate: [],
-            lightTemplate: [],
-            aoTemplate: [],
-        },
         flora: {
             positionTemplate: [],
             faceTemplate: [],
@@ -120,7 +104,7 @@ export const Processor = {
             lightTemplate: [],
             aoTemplate: [],
         },
-        fluid: {
+        liquid: {
             positionTemplate: [],
             faceTemplate: [],
             uvTemplate: [],
@@ -159,34 +143,20 @@ export const Processor = {
         this.voxelProcesseData.exposedFaces = this.exposedFaces;
         this.voxelProcesseData.textureRotations = this.textureRotation;
     },
-    cullCheck(face, voxelId, voxelShapeId, voxelSubstance, shapeState, x, y, z, faceBit) {
+    cullCheck(face, voxelObject, voxelShape, voxelSubstance, x, y, z, faceBit) {
         const voxelExists = this.nDataTool.loadIn(x, y, z);
         let finalResult = false;
         if (voxelExists && this.nDataTool.isRenderable()) {
-            let neighorSustance = this.nDataTool.getSubstance();
-            let substanceRuleResult = DVEB.voxelHelper.substanceRuleCheck(voxelSubstance, neighorSustance);
-            const voxelShape = DVEC.DVEB.shapeManager.getShape(voxelShapeId);
-            const cullFaceOverride = this.cullFaceOverrideData;
-            cullFaceOverride.face = face;
-            cullFaceOverride.substanceResult = substanceRuleResult;
-            cullFaceOverride.shapeState = shapeState;
-            cullFaceOverride.voxelId = voxelId;
-            cullFaceOverride.voxelSubstance = voxelSubstance;
-            cullFaceOverride.neighborVoxelId = this.nDataTool.getStringId();
-            cullFaceOverride.neighborVoxelSubstance =
-                neighorSustance;
-            cullFaceOverride.neighborVoxelShape = DVEC.DVEB.shapeManager.getShape(this.nDataTool.getShapeId());
-            cullFaceOverride.neighborVoxelShapeState = this.nDataTool.getShapeState();
-            cullFaceOverride.x = x;
-            cullFaceOverride.y = y;
-            cullFaceOverride.z = z;
-            let shapeResult = voxelShape.cullFaceOverride(this.cullFaceOverrideData);
-            if (!voxelShape.cullFaceOverride) {
-                finalResult = shapeResult;
-            }
-            else {
-                finalResult = voxelShape.cullFaceOverride(this.cullFaceOverrideData);
-            }
+            let substanceRuleResult = Builder.voxelHelper.substanceRuleCheck(voxelSubstance, this.nDataTool.getSubstance());
+            this.faceDataOverride.face = face;
+            this.faceDataOverride.default = substanceRuleResult;
+            finalResult = substanceRuleResult;
+            this.faceDataOverride.default = finalResult;
+            finalResult = OverrideManager.runOverride("CullFace", voxelShape.id, "Any", this.faceDataOverride);
+            this.faceDataOverride.default = finalResult;
+            finalResult = OverrideManager.runOverride("CullFace", voxelShape.id, this.nDataTool.getVoxelShapeObj().id, this.faceDataOverride);
+            this.faceDataOverride.default = finalResult;
+            finalResult = OverrideManager.runOverride("CullFace", voxelObject.id, this.nDataTool.getVoxelShapeObj().id, this.faceDataOverride);
         }
         else {
             finalResult = true;
@@ -225,18 +195,17 @@ export const Processor = {
             }
         }
         this.mDataTool.setSecondary(doSecondCheck);
-        const voxelId = this.mDataTool.getStringId();
-        const voxelObject = DVEC.voxelManager.getVoxel(voxelId);
+        const voxelObject = this.mDataTool.getVoxelObj();
         if (!voxelObject)
             return;
         const voxelState = this.mDataTool.getState();
-        const voxelShapeId = this.mDataTool.getShapeId();
+        const voxelShape = this.mDataTool.getVoxelShapeObj();
         const voxelShapeState = this.mDataTool.getShapeState();
         const voxelSubstance = this.mDataTool.getSubstance();
         let faceBit = 0;
         let faceIndex = 0;
         for (const point of $3dCardinalNeighbors) {
-            faceBit = this.cullCheck(FaceMap[faceIndex], voxelId, voxelShapeId, voxelSubstance, voxelShapeState, x + point[0] * LOD, y + point[1] * LOD, z + point[2] * LOD, faceBit);
+            faceBit = this.cullCheck(FaceMap[faceIndex], voxelObject, voxelShape, voxelSubstance, x + point[0] * LOD, y + point[1] * LOD, z + point[2] * LOD, faceBit);
             faceIndex++;
         }
         if (faceBit == 0)
@@ -261,24 +230,24 @@ export const Processor = {
         this.voxelProcesseData.colorTemplate = baseTemplate.colorTemplate;
         this.voxelProcesseData.aoTemplate = baseTemplate.aoTemplate;
         this.voxelProcesseData.lightTemplate = baseTemplate.lightTemplate;
-        voxelObject.process(this.voxelProcesseData, DVEB);
-        baseTemplate.shapeTemplate.push(voxelShapeId);
+        voxelObject.process(this.voxelProcesseData, Builder);
+        baseTemplate.shapeTemplate.push(this.mDataTool.getShapeId());
         baseTemplate.positionTemplate.push(x, y, z);
         for (const face of FaceMap) {
             faceBit = this.faceStateCheck(face, faceBit);
         }
         baseTemplate.faceTemplate.push(faceBit);
         if (this.exposedFaces[0] &&
-            (voxelSubstance == "fluid" || voxelSubstance == "magma")) {
-            this.calculatFlow(voxelId, this.faceStates[0] == 1, x, y, z, baseTemplate.flowTemplate);
+            (voxelSubstance == "liquid" || voxelSubstance == "magma")) {
+            this.calculatFlow(this.faceStates[0] == 1, x, y, z, baseTemplate.flowTemplate);
         }
     },
     constructEntity(composed = 1) {
         this.settings.entity = true;
         this.settings.composedEntity = composed;
-        const maxX = DVEB.entityConstructor.width;
-        const maxY = DVEB.entityConstructor.height;
-        const maxZ = DVEB.entityConstructor.depth;
+        const maxX = Builder.entityConstructor.width;
+        const maxY = Builder.entityConstructor.height;
+        const maxZ = Builder.entityConstructor.depth;
         for (let x = 0; x < maxX; x++) {
             for (let z = 0; z < maxZ; z++) {
                 for (let y = 0; y < maxY; y++) {
@@ -288,8 +257,9 @@ export const Processor = {
         }
         return this.template;
     },
-    makeAllChunkTemplates(dimension, chunk, chunkX, chunkY, chunkZ, LOD = 1) {
-        WorldRegister.cache.enable();
+    makeAllChunkTemplates(dimension, chunkX, chunkY, chunkZ, LOD = 1) {
+        heightMapTool.setDimension(dimension);
+        heightMapTool.chunk.loadIn(chunkX, chunkY, chunkZ);
         this.nDataTool.setDimension(dimension);
         this.mDataTool.setDimension(dimension);
         this.voxelProcesseData.dimension = this.dimension;
@@ -300,14 +270,13 @@ export const Processor = {
         let maxZ = WorldBounds.chunkZSize;
         for (let x = 0; x < maxX; x += LOD) {
             for (let z = 0; z < maxZ; z += LOD) {
-                let minY = this.heightByte.getLowestExposedVoxel(x, z, chunk.data);
-                let maxY = this.heightByte.getHighestExposedVoxel(x, z, chunk.data) + 1;
+                let minY = heightMapTool.chunk.setXZ(x, z).getMin();
+                let maxY = heightMapTool.chunk.setXZ(x, z).getMax() + 1;
                 for (let y = minY; y < maxY; y += LOD) {
                     this._process(template, x + chunkX, y + chunkY, z + chunkZ);
                 }
             }
         }
-        WorldRegister.cache.disable();
         return this.template;
     },
     processVoxelLight(data, ignoreAO = false) {
@@ -326,18 +295,11 @@ export const Processor = {
         }
     },
     flush() {
-        this.voxelProcesseData.voxelState = 0;
-        this.voxelProcesseData.voxelShapeState = 0;
-        this.voxelProcesseData.level = 0;
-        this.voxelProcesseData.levelState = 0;
-        this.voxelProcesseData.x = 0;
-        this.voxelProcesseData.y = 0;
-        this.voxelProcesseData.z = 0;
-        this.voxelProcesseData.overlayUVTemplate = [];
-        this.voxelProcesseData.uvTemplate = [];
-        this.voxelProcesseData.colorTemplate = [];
-        this.voxelProcesseData.aoTemplate = [];
-        this.voxelProcesseData.lightTemplate = [];
+        this.voxelProcesseData.overlayUVTemplate = null;
+        this.voxelProcesseData.uvTemplate = null;
+        this.voxelProcesseData.colorTemplate = null;
+        this.voxelProcesseData.aoTemplate = null;
+        this.voxelProcesseData.lightTemplate = null;
         for (const substance of Object.keys(this.template)) {
             //@ts-ignore
             for (const templateKey of Object.keys(this.template[substance])) {

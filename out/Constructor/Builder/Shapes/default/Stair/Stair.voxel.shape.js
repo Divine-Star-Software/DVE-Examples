@@ -1,53 +1,43 @@
-import { DVEB } from "../../../DivineVoxelEngineBuilder.js";
-import { buildStair, stairCachedPosition } from "./StairBuilder.js";
-import { StairData } from "./StairData.js";
-import { StairAOBoxOverrides } from "./StairAO.overrides.js";
-import { StairCullFace } from "./Stair.cullface.js";
+//functions
+import { SetUpStairOverrides } from "./Stair.overrides.js";
+//data
+import { StairBuilderData } from "./StairData.js";
+import { FaceMap } from "../../../../../Data/Constants/Util/Faces.js";
 export const StairVoxelShape = {
     id: "Stair",
-    cullFaceOverrideFunctions: {},
-    aoAddOverrideFunctions: {},
-    aoFlipOverrideFunctions: {},
-    registerShapeForCullFaceOverride(shapeId, func) {
-        this.cullFaceOverrideFunctions[shapeId] = func;
-    },
-    registerShapeAOAddOverride(shapeId, func) {
-        this.aoAddOverrideFunctions[shapeId] = func;
-    },
-    cullFaceOverride(data) {
-        if (this.cullFaceOverrideFunctions[data.neighborVoxelShape.id]) {
-            return this.cullFaceOverrideFunctions[data.neighborVoxelShape.id](data);
+    build(mesher) {
+        const data = StairBuilderData[mesher.data.getShapeState()];
+        if (!data)
+            return;
+        let i = 0;
+        for (const face of FaceMap) {
+            const node = data[i];
+            if (mesher.templateData.loadIn(face).isExposed()) {
+                let k = node.length;
+                for (const quad of node) {
+                    k--;
+                    mesher.setTemplateIncrement(k == 0);
+                    if (quad[6] >= 0) {
+                        mesher.quad.setFlipped(quad[6] == 1);
+                    }
+                    mesher.quad
+                        .setDimensions(quad[1][0], quad[1][1])
+                        .setDirection(quad[0])
+                        .updatePosition(quad[2][0], quad[2][1], quad[2][2])
+                        .AO.addCustom(quad[3])
+                        .light.addCustom(quad[4])
+                        .oUVS.add()
+                        .uvs.setRoation(quad[5][0])
+                        .setWidth(quad[5][1], quad[5][2])
+                        .setHeight(quad[5][3], quad[5][4])
+                        .add()
+                        .create()
+                        .clearTransform();
+                }
+            }
+            mesher.setTemplateIncrement(true);
+            i++;
         }
-        return StairCullFace(data);
-    },
-    aoAddOverride(data) {
-        if (this.aoAddOverrideFunctions[data.neighborVoxelShape.id]) {
-            return this.aoAddOverrideFunctions[data.neighborVoxelShape.id](data);
-        }
-        return data.substanceResult;
-    },
-    registerShapeAOFlipOverride(shapeId, func) {
-        this.aoAddOverrideFunctions[shapeId] = func;
-    },
-    aoFlipOverride(data) {
-        if (data.face == "top" || data.face == "bottom")
-            return true;
-        return false;
-    },
-    addToChunkMesh(data) {
-        stairCachedPosition.x = data.position.x;
-        stairCachedPosition.y = data.position.y;
-        stairCachedPosition.z = data.position.z;
-        if (StairData[data.shapeState] !== undefined) {
-            buildStair(data, StairData[data.shapeState]);
-        }
-        return DVEB.shapeHelper.produceShapeReturnData(data);
     },
 };
-StairVoxelShape.registerShapeAOAddOverride("Box", (data) => {
-    return data.substanceResult;
-    if (StairAOBoxOverrides[data.shapeState]) {
-        return StairAOBoxOverrides[data.shapeState](data);
-    }
-    return false;
-});
+SetUpStairOverrides();
